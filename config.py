@@ -11,14 +11,14 @@ from s3p_sdk.plugin.config import (
 )
 from s3p_sdk.plugin.config.type import SOURCE
 from s3p_sdk.module import (
-    WEBDRIVER,
+    WebDriver,
 )
 
 config = PluginConfig(
     plugin=CoreConfig(
-        reference='uniq source name',
+        reference='oasis',
         type=SOURCE,
-        files=['payload_parser.py', ],
+        files=['oasis.py', ],
         is_localstorage=False
     ),
     task=TaskConfig(
@@ -36,15 +36,15 @@ config = PluginConfig(
         bus=None,
     ),
     payload=payload.PayloadConfig(
-        file='payload_parser.py',
-        classname='MyParser',
+        file='oasis.py',
+        classname='OasisParser',
         entry=payload.entry.EntryConfig(
             method='content',
             params=[
-                payload.entry.ModuleParamConfig(key='driver', module_name=WEBDRIVER, bus=True),
+                payload.entry.ModuleParamConfig(key='driver', module_name=WebDriver, bus=True),
                 payload.entry.ConstParamConfig(key='max_count_documents', value=50),
-                payload.entry.ConstParamConfig(key='url',
-                                               value='url to the source page'),
+                payload.entry.ConstParamConfig(key='url', value='url to the source page'),
+                payload.entry.ConstParamConfig(key='timeout', value=20)
             ]
         )
     )
