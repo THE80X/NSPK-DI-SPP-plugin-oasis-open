@@ -76,7 +76,7 @@ referencing==0.35.1
 regex==2023.12.25
 requests==2.31.0
 rpds-py==0.18.1
-s3p-sdk==0.2.3
+s3p-sdk==0.2.5
 selenium==4.15.2
 selenium-stealth==1.0.6
 selenium-wire==5.1.0
