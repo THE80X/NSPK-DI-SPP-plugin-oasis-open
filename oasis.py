@@ -1,12 +1,9 @@
 import datetime
 import time
-
 from s3p_sdk.plugin.payloads.parsers import S3PParserBase
 from s3p_sdk.types import S3PRefer, S3PDocument
-from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 
@@ -29,7 +26,7 @@ class OasisParser(S3PParserBase):
         # HOST - это главная ссылка на источник, по которому будет "бегать" парсер
         self.logger.debug(F"Parser enter to {self._refer.to_logging}")
 
-        self._driver.get(url=self.URL)
+        self._initial_access_source(url=self.URL)
 
         details = self._driver.find_element(By.XPATH, '//*[@id="main"]/section').find_elements(By.TAG_NAME, 'details')
 
@@ -105,7 +102,7 @@ class OasisParser(S3PParserBase):
     def _end_work(self, documents: list):
         for document in documents:
             for i in range(len(document["local_documents"])):
-                self._driver.get(url=document["local_documents"][i]["local_link"])
+                self._initial_access_source(url=document["local_documents"][i]["local_link"])
                 try:
                     try:
                         body_info = self._driver.find_element(By.TAG_NAME, 'body')
@@ -127,52 +124,6 @@ class OasisParser(S3PParserBase):
                     ))
                 except Exception as _ex:
                     self.logger.warn('There is no title, text or annotation', document['local_documents'][i]['local_link'])
-
-    def _parse_page(self, url: str) -> S3PDocument:
-        doc = self._page_init(url)
-        return doc
-
-    def _page_init(self, url: str) -> S3PDocument:
-        self._initial_access_source(url)
-        return S3PDocument()
-
-    def _encounter_pages(self) -> str:
-        """
-        Формирование ссылки для обхода всех страниц
-        """
-        _base = self.URL
-        _param = f'&page='
-        page = 0
-        while True:
-            url = str(_base) + _param + str(page)
-            page += 1
-            yield url
-
-    def _collect_doc_links(self, _url: str) -> list[str]:
-        """
-        Формирование списка ссылок на материалы страницы
-        """
-        try:
-            self._initial_access_source(_url)
-            self._wait.until(ec.presence_of_all_elements_located((By.CLASS_NAME, '<class контейнера>')))
-        except Exception as e:
-            raise NoSuchElementException() from e
-        links = []
-
-        try:
-            articles = self._driver.find_elements(By.CLASS_NAME, '<class контейнера>')
-        except Exception as e:
-            raise NoSuchElementException('list is empty') from e
-        else:
-            for article in articles:
-                try:
-                    doc_link = article.find_element(By.TAG_NAME, 'a').get_attribute('href')
-                except Exception as e:
-                    raise NoSuchElementException(
-                        'Страница не открывается или ошибка получения обязательных полей') from e
-                else:
-                    links.append(doc_link)
-        return links
 
     def _initial_access_source(self, url: str, delay: int = 2):
         self._driver.get(url)
