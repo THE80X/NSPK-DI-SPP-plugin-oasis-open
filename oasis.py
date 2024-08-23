@@ -104,28 +104,25 @@ class OasisParser(S3PParserBase):
             for i in range(len(document["local_documents"])):
                 self._initial_access_source(url=document["local_documents"][i]["local_link"])
                 try:
-                    try:
-                        body_info = self._driver.find_element(By.TAG_NAME, 'body')
-                    except Exception as _ex:
-                        body_info = self._driver.find_element(By.XPATH, '//*[@id="topmenu-body"]')
-                    local_text = body_info.text
-                    document["local_documents"][i]["local_text"] = local_text
-
-                    self._find(S3PDocument(
-                        title=f"{document['global_title']} ({str(document['local_documents'][i]['local_link']).replace('http://docs.oasis-open.org/','')})",
-                        abstract=document['global_annotation'],
-                        link=document['local_documents'][i]['local_link'],
-                        text=document['local_documents'][i]['local_text'],
-                        other=None,
-                        loaded=datetime.datetime.now(),
-                        id=None,
-                        published=document['date'],
-                        storage=None
-                    ))
+                    body_info = self._driver.find_element(By.TAG_NAME, 'body')
                 except Exception as _ex:
-                    self.logger.warn('There is no title, text or annotation', document['local_documents'][i]['local_link'])
+                    body_info = self._driver.find_element(By.ID, 'topmenu-body')
+                local_text = body_info.text
+                document["local_documents"][i]["local_text"] = local_text
 
-    def _initial_access_source(self, url: str, delay: int = 2):
+                self._find(S3PDocument(
+                    title=f"{document['global_title']} ({str(document['local_documents'][i]['local_link']).replace('http://docs.oasis-open.org/','')})",
+                    abstract=document['global_annotation'],
+                    link=document['local_documents'][i]['local_link'],
+                    text=document['local_documents'][i]['local_text'],
+                    other=None,
+                    loaded=datetime.datetime.now(),
+                    id=None,
+                    published=document['date'],
+                    storage=None
+                ))
+
+    def _initial_access_source(self, url: str, delay: int = 1):
         self._driver.get(url)
         self.logger.debug('Entered on web page ' + url)
         time.sleep(delay)
